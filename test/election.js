@@ -27,13 +27,16 @@ contract("Election", async function(accounts) {
         });
     });
 
-    it("allows a vote to cast a vote", function() {
+    it("allows a voter to cast a vote", function() {
         return Election.deployed().then(function(instance) {
             electionInstance = instance;
             candidateId = 1;
-            return electionInstance.vote(candidateId, {from: accounts[2] });
+            return electionInstance.vote(candidateId, {from: accounts[0] });
         }).then(function(receipt) {
-            return electionInstance.voters(accounts[2]);
+            assert.equal(receipt.logs.length, 1, "an event was triggered");
+            assert.equal(receipt.logs[0].event, "votedEvent", "the event type is correct");
+            assert.equal(receipt.logs[0].args._candidateId.toNumber(), candidateId, "the candidate ID is correct");
+            return electionInstance.voters(accounts[0]);
         }).then(function(voted) {
             assert(voted, "the voter was marked as voted");
             return electionInstance.candidates(candidateId);
